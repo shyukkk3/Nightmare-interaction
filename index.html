@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Unpredictable Dream, Nightmare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ★ Warbler Banner 폰트 설정 (폰트 파일이 폴더에 있어야 합니다) */
+        @font-face {
+            font-family: 'Warbler Banner';
+            src: url('WarblerBanner.woff2') format('woff2'),
+                 url('WarblerBanner.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body { 
+            margin: 0; padding: 0; 
+            /* ★ 배경 그라데이션 강화: 대비를 더 확실하게 조절 */
+            background: radial-gradient(circle, #2c2c2c 0%, #050505 100%); 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+        }
+
+        @keyframes moveLeftRight {
+            0% { transform: translateX(-11px); }
+            50% { transform: translateX(11px); }
+            100% { transform: translateX(-11px); }
+        }
+
+        /* 1. 거품 배경 캔버스 (가장 뒤) */
+        #bubble-canvas { position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none; }
+
+        /* 2. 배경 타이포그래피 (Warbler Banner 적용) */
+        .title { 
+            position: absolute; 
+            font-family: 'Luminari', serif; /* 폰트 변경 */
+            font-size: 95pt; 
+            color: rgba(255, 255, 255, 0.1); /* 밝기 대비를 위해 투명도 살짝 조절 */
+            z-index: 1; 
+            white-space: nowrap; 
+            user-select: none; 
+            letter-spacing: -2px; /* 서체 특성에 맞춰 자간 조절 */
+            pointer-events: none; 
+            animation: moveLeftRight 18s ease-in-out infinite; 
+        }
+        #top-left { top: -20px; left: 20px; }
+        #bottom-right { bottom: -20px; right: 20px; }
+
+        /* 3. 메인 악몽 메쉬 캔버스 */
+        #main-canvas { position: absolute; top: 0; left: 0; z-index: 10; cursor: move; }
+
+        #desc-btn { position: absolute; top: 35px; right: 35px; width: 55px; cursor: pointer; z-index: 100; transition: transform 0.3s ease; }
+        #desc-btn:hover { transform: rotate(25deg); opacity: 0.8; }
+
+        /* ★ 4. 설명 오버레이 (텍스트 양에 맞춰 크기 확장) */
+        .overlay { 
+            opacity: 0; visibility: hidden; position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(0, 0, 0, 0.9); /* 조금 더 어둡게 */
+            z-index: 200; display: flex; justify-content: center; align-items: center; 
+            transition: opacity 0.6s ease, visibility 0.6s; 
+        }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        .overlay-content { 
+            background-color: transparent; 
+            color: #a8a8a8; 
+            padding: 20px; 
+            max-width: 600px; /* ★ 폭 확장 */
+            width: 85%; 
+            text-align: center; 
+        }
+        .overlay-content h2 { 
+            font-family: 'Warbler Banner', serif; 
+            font-size: 3.5rem; 
+            margin-bottom: 30px; 
+            color: #dbdbdb; 
+            letter-spacing: 2px;
+        }
+        .overlay-content p { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            font-size: 1.05rem; 
+            font-weight: 300;
+            line-height: 1.9; /* ★ 줄 간격 확보 */
+            margin-bottom: 40px; 
+            word-break: keep-all; /* 한글 단어 끊김 방지 */
+            color: #bbb;
+        }
+        .overlay-content a { 
+            font-family: 'Warbler Banner', serif;
+            color: #777; 
+            text-decoration: none; 
+            border-bottom: 1px solid #444; 
+            transition: all 0.3s; 
+            font-size: 1.2rem;
+        }
+        .overlay-content a:hover { color: #fff; border-bottom: 1px solid #fff; }
+    </style>
+</head>
+<body>
+
+    <div id="top-left" class="title">Unpredictable Dream</div>
+    <div id="bottom-right" class="title">Nightmare</div>
+
+    <img src="button.png" id="desc-btn" alt="Description" onclick="openOverlay()">
+
+    <div id="infoOverlay" class="overlay" onclick="closeOverlay(event)">
+        <div class="overlay-content">
+            <h2>Nightmare</h2>
+            <p>
+                꿈은 파편화된 기억들이 모여 이루어지는 잔상의 집합체입니다. <br>
+                그중에서도 악몽은 지극히 변덕스럽고 예측할 수 없는 형태로 요동치며, 우리의 시야를 어지럽히고 의식의 통제권을 잠식합니다. <br><br>
+                사용자는 꿈틀거리는 그래픽을 마우스 포인터로 잡아당겨 악몽 덩어리를 본인이 원하는 대로, 때로는 본인이 예측한 것과는 다른 형태로 그래픽을 헤집어 놓을 수 있습니다. <br>
+                이 악몽 그래픽과의 인터렉션을 통해 자신이 꾸었던 악몽과 이 그래픽이 가진 기괴함, 가변성을 연결지어 회상해보는 시간을 가져 보시기 바랍니다.
+            </p>
+            <a href="https://www.instagram.com/mmmtttnnn_____/" target="_blank" rel="noopener noreferrer">View Archive @Instagram</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+
+    <script>
+        const overlay = document.getElementById('infoOverlay');
+        function openOverlay() { overlay.classList.add('active'); }
+        function closeOverlay(event) { if (event.target.id === 'infoOverlay') overlay.classList.remove('active'); }
+
+        // --- 스케치 1: 배경 군집 거품 ---
+        const bubbleSketch = (p) => {
+            let bubbleImgs = [];
+            let bubbles = [];
+            let nextSpawnFrame = 0;
+
+            p.preload = () => {
+                for (let i = 1; i <= 5; i++) {
+                    bubbleImgs.push(p.loadImage('circle ' + i + '.png'));
+                }
+            };
+
+            p.setup = () => {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.id('bubble-canvas');
+                p.noStroke();
+            };
+
+            p.draw = () => {
+                p.clear();
+                let t = p.frameCount * 0.01;
+
+                if (p.frameCount >= nextSpawnFrame) {
+                    let clusterX = p.random(p.width);
+                    let numBubbles = p.floor(p.random(6, 12)); 
+                    for (let i = 0; i < numBubbles; i++) {
+                        bubbles.push({
+                            img: p.random(bubbleImgs),
+                            x: clusterX + p.random(-40, 40), 
+                            y: p.height + p.random(20, 150),
+                            speed: p.random(1.2, 2.8),
+                            size: p.random(10, 40),
+                            noiseShift: p.random(1000),
+                            clusterNoiseX: clusterX * 0.01 
+                        });
+                    }
+                    nextSpawnFrame = p.frameCount + p.floor(p.random(80, 200));
+                }
+
+                for (let i = bubbles.length - 1; i >= 0; i--) {
+                    let b = bubbles[i];
+                    b.y -= b.speed;
+                    let clusterSway = p.noise(b.clusterNoiseX, t * 0.2);
+                    b.x += p.map(clusterSway, 0, 1, -0.6, 0.6);
+                    let lateralNoise = p.noise(b.y * 0.01, b.noiseShift, t * 0.4);
+                    b.x += p.map(lateralNoise, 0, 1, -0.7, 0.7);
+                    
+                    p.imageMode(p.CENTER);
+                    p.image(b.img, b.x, b.y, b.size, b.size);
+                    if (b.y < -100) bubbles.splice(i, 1);
+                }
+            };
+
+            p.windowResized = () => p.resizeCanvas(p.windowWidth, p.windowHeight);
+        };
+        new p5(bubbleSketch);
+
+        // --- 스케치 2: 메인 악몽 메쉬 (nightmare.png) ---
+        const mainSketch = (p) => {
+            let img;
+            let mesh = [];
+            const rows = 55, cols = 55; // 디테일 살짝 상향
+            const stiffness = 0.03, damping = 0.8;
+            const dragStrength = 0.3, rotSpeed = 0.001, boilIntensity = 0.7;
+
+            let isImageLoaded = false;
+            let imgDisplayW, imgDisplayH;
+
+            p.preload = () => {
+                // ★ nightmare.png로 변경
+                img = p.loadImage('nightmare.png', () => { isImageLoaded = true; });
+            };
+
+            p.setup = () => {
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
+                canvas.id('main-canvas');
+                p.textureMode(p.NORMAL);
+                initMesh();
+            };
+
+            function initMesh() {
+                if (!img) return;
+                let displayMax = p.min(p.windowWidth, p.windowHeight) * 0.83;
+                let ratio = img.width / img.height;
+                if (ratio > 1) { imgDisplayW = displayMax; imgDisplayH = displayMax / ratio; }
+                else { imgDisplayH = displayMax; imgDisplayW = imgDisplayH * ratio; }
+
+                mesh = [];
+                let startX = -imgDisplayW / 2;
+                let startY = -imgDisplayH / 2;
+                let w = imgDisplayW / cols;
+                let h = imgDisplayH / rows;
+
+                for (let y = 0; y <= rows; y++) {
+                    for (let x = 0; x <= cols; x++) {
+                        mesh.push({
+                            currentX: startX + x * w,
+                            currentY: startY + y * h,
+                            originX: startX + x * w,
+                            originY: startY + y * h,
+                            vx: 0, vy: 0,
+                            u: (x / cols), v: (y / rows)
+                        });
+                    }
+                }
+            }
+
+            p.draw = () => {
+                p.clear();
+                if (!isImageLoaded) return;
+
+                let mx = p.mouseX - p.width / 2;
+                let my = p.mouseY - p.height / 2;
+                let pmx = p.pmouseX - p.width / 2;
+                let pmy = p.pmouseY - p.height / 2;
+                let t = p.frameCount * 0.02;
+                let isOverlayActive = overlay.classList.contains('active');
+
+                for (let p_m of mesh) {
+                    if (p.mouseIsPressed && !isOverlayActive) {
+                        let d = p.dist(mx, my, p_m.currentX, p_m.currentY);
+                        if (d < 200) {
+                            let pull = p.map(d, 0, 200, 1.0, 0);
+                            p_m.vx += (mx - pmx) * pull * dragStrength;
+                            p_m.vy += (my - pmy) * pull * dragStrength;
+                        }
+                    }
+                    let nX = p.noise(p_m.originX * 0.07, p_m.originY * 0.07, t);
+                    let nY = p.noise(p_m.originX * 0.01 + 500, p_m.originY * 0.01 + 500, t);
+                    p_m.vx += p.map(nX, 0, 1, -boilIntensity, boilIntensity);
+                    p_m.vy += p.map(nY, 0, 1, -boilIntensity, boilIntensity);
+                    p_m.vx += (p_m.originX - p_m.currentX) * stiffness;
+                    p_m.vy += (p_m.originY - p_m.currentY) * stiffness;
+                    p_m.vx *= damping; p_m.vy *= damping;
+                    p_m.currentX += p_m.vx; p_m.currentY += p_m.vy;
+                }
+
+                p.push();
+                p.rotateZ(p.frameCount * rotSpeed);
+                p.noStroke();
+                for (let y = 0; y < rows; y++) {
+                    p.beginShape(p.TRIANGLE_STRIP);
+                    p.texture(img); 
+                    for (let x = 0; x <= cols; x++) {
+                        let i1 = x + y * (cols + 1);
+                        let i2 = x + (y + 1) * (cols + 1);
+                        p.vertex(mesh[i1].currentX, mesh[i1].currentY, 0, mesh[i1].u, mesh[i1].v);
+                        p.vertex(mesh[i2].currentX, mesh[i2].currentY, 0, mesh[i2].u, mesh[i2].v);
+                    }
+                    p.endShape();
+                }
+                p.pop();
+            };
+
+            p.windowResized = () => {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                initMesh();
+            };
+        };
+        new p5(mainSketch);
+    </script>
+</body>
+</html>
